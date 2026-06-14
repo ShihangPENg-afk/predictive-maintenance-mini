@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -97,6 +98,15 @@ def validate_features(features: dict[str, Any]) -> dict[str, float]:
                 )
                 continue
             parsed[name] = float(value)
+            if not math.isfinite(parsed[name]):
+                invalid.append(
+                    {
+                        "field": name,
+                        "message": "Expected a finite numeric value.",
+                        "received_type": type(value).__name__,
+                    }
+                )
+                continue
         else:
             parsed[name] = value
 
@@ -121,7 +131,7 @@ def defect_probability(probabilities: dict[str, float] | None) -> float | None:
     classes = state.schema.get("classes", [])
     if len(classes) >= 2 and classes[0] == "defect":
         return probabilities.get(classes[0])
-    return max(probabilities.values()) if probabilities else None
+    return None
 
 
 def risk_level_from_probability(defect_prob: float | None, prediction: str) -> str:
