@@ -1,0 +1,7 @@
+services:
+  industrial-health-api:
+    build: .
+    container_name: industrial-health-api
+    ports:
+      - "8010:8010"
+    restart: unless-stopped
