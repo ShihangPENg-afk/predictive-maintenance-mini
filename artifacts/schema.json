@@ -1,6 +1,6 @@
 {
   "target_column": "target",
-  "feature_columns": [
+  "features": [
     "temperature",
     "pressure",
     "vibration",

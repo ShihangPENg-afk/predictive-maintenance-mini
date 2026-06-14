@@ -1,30 +1,51 @@
 {
   "accuracy": 0.71,
-  "f1_macro": 0.6363636363636364,
+  "f1_macro": 0.6695156695156695,
+  "target_column": "target",
+  "rows": 500,
+  "features": [
+    "temperature",
+    "pressure",
+    "vibration",
+    "speed",
+    "humidity"
+  ],
+  "numeric_features": [
+    "temperature",
+    "pressure",
+    "vibration",
+    "speed",
+    "humidity"
+  ],
+  "categorical_features": [],
+  "classes": [
+    "defect",
+    "normal"
+  ],
   "classification_report": {
     "defect": {
-      "precision": 0.65,
-      "recall": 0.37142857142857144,
-      "f1-score": 0.4727272727272727,
+      "precision": 0.6,
+      "recall": 0.5142857142857142,
+      "f1-score": 0.5538461538461539,
       "support": 35.0
     },
     "normal": {
-      "precision": 0.725,
-      "recall": 0.8923076923076924,
-      "f1-score": 0.8,
+      "precision": 0.7571428571428571,
+      "recall": 0.8153846153846154,
+      "f1-score": 0.7851851851851852,
       "support": 65.0
     },
     "accuracy": 0.71,
     "macro avg": {
-      "precision": 0.6875,
-      "recall": 0.6318681318681318,
-      "f1-score": 0.6363636363636364,
+      "precision": 0.6785714285714286,
+      "recall": 0.6648351648351648,
+      "f1-score": 0.6695156695156695,
       "support": 100.0
     },
     "weighted avg": {
-      "precision": 0.69875,
+      "precision": 0.7021428571428572,
       "recall": 0.71,
-      "f1-score": 0.6854545454545454,
+      "f1-score": 0.7042165242165243,
       "support": 100.0
     }
   }
