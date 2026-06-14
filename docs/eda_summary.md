@@ -1,50 +1,43 @@
 # Manufacturing Quality EDA Summary
 
 - Source file: `data/raw/manufacturing_quality.csv`
-- Task: manufacturing quality classification (`target`)
+- Task: manufacturing quality classification
 
 ## Dataset Shape
 
-- Rows: **800**
-- Columns: **9**
+- Rows: **500**
+- Columns: **6**
 
 ## Column Types
 
-| Column | Dtype |
-| --- | --- |
-| batch_id | `str` |
-| temperature_c | `float64` |
-| pressure_bar | `float64` |
-| vibration_mm_s | `float64` |
-| humidity_pct | `float64` |
-| line_speed_mpm | `float64` |
-| tool_wear_pct | `float64` |
-| power_kw | `float64` |
-| target | `int64` |
+|             | dtype   |
+|:------------|:--------|
+| temperature | float64 |
+| pressure    | float64 |
+| vibration   | float64 |
+| speed       | float64 |
+| humidity    | float64 |
+| target      | str     |
 
 ## Missing Values
 
-| Column | Missing Count | Missing % |
-| --- | ---: | ---: |
-| temperature_c | 6 | 0.75% |
-| pressure_bar | 6 | 0.75% |
+无缺失值。
 
-## Target Distribution (`target`)
+## Target Distribution
 
-| Target | Count | Percentage |
-| --- | ---: | ---: |
-| 0 | 624 | 78.00% |
-| 1 | 176 | 22.00% |
+目标列：`target`
 
-## Numeric Feature Statistics
+| target   |   count |   percentage |
+|:---------|--------:|-------------:|
+| defect   |     174 |         34.8 |
+| normal   |     326 |         65.2 |
 
-| Column | Count | Mean | Std | Min | 25% | 50% | 75% | Max |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| temperature_c | 794 | 71.874 | 4.438 | 58.660 | 68.769 | 71.961 | 74.783 | 85.112 |
-| pressure_bar | 794 | 5.172 | 0.612 | 3.011 | 4.780 | 5.193 | 5.566 | 7.107 |
-| vibration_mm_s | 800 | 2.053 | 0.806 | -0.351 | 1.523 | 2.108 | 2.584 | 4.431 |
-| humidity_pct | 800 | 48.293 | 7.007 | 27.969 | 43.347 | 48.070 | 53.268 | 69.417 |
-| line_speed_mpm | 800 | 119.824 | 14.770 | 78.758 | 109.612 | 119.457 | 129.499 | 166.328 |
-| tool_wear_pct | 800 | 48.656 | 25.632 | 5.083 | 26.811 | 48.116 | 70.674 | 94.974 |
-| power_kw | 800 | 18.459 | 2.167 | 11.657 | 16.926 | 18.495 | 19.916 | 25.631 |
-| target | 800 | 0.220 | 0.415 | 0.000 | 0.000 | 0.000 | 0.000 | 1.000 |
+## Numeric Describe
+
+|             |   count |      mean |       std |   min |      25% |     50% |      75% |    max |
+|:------------|--------:|----------:|----------:|------:|---------:|--------:|---------:|-------:|
+| temperature |     500 |  71.9343  |  4.79983  | 59.17 |  68.6625 |  72.015 |  74.935  |  86.57 |
+| pressure    |     500 |   5.17312 |  0.611152 |  3.01 |   4.765  |   5.205 |   5.555  |   7.11 |
+| vibration   |     500 |   2.00122 |  0.806192 |  0.2  |   1.47   |   2     |   2.5225 |   4.25 |
+| speed       |     500 | 117.627   | 14.9502   | 80    | 108.153  | 117.965 | 127.627  | 160    |
+| humidity    |     500 |  47.9912  |  8.14346  | 25    |  42.4425 |  48.29  |  53.2725 |  70    |

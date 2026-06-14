@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import joblib
+import mlflow
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
@@ -25,6 +26,9 @@ ARTIFACTS_DIR = PROJECT_ROOT / "artifacts"
 MODEL_PATH = ARTIFACTS_DIR / "model.pkl"
 METRICS_PATH = ARTIFACTS_DIR / "metrics.json"
 SCHEMA_PATH = ARTIFACTS_DIR / "schema.json"
+MLFLOW_DB_PATH = PROJECT_ROOT / "mlflow.db"
+MLFLOW_TRACKING_URI = f"sqlite:///{MLFLOW_DB_PATH.resolve().as_posix()}"
+MLFLOW_EXPERIMENT = "industrial-health-demo"
 
 # 与 scripts/eda.py 保持一致；若 CSV 目标列不在列表中，请在此追加
 TARGET_CANDIDATES = [
@@ -36,6 +40,8 @@ TARGET_CANDIDATES = [
     "pass_fail",
 ]
 
+MODEL_TYPE = "RandomForestClassifier"
+N_ESTIMATORS = 200
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
 
@@ -103,7 +109,7 @@ def main() -> None:
             (
                 "model",
                 RandomForestClassifier(
-                    n_estimators=200,
+                    n_estimators=N_ESTIMATORS,
                     max_depth=None,
                     random_state=RANDOM_STATE,
                     class_weight="balanced",
@@ -143,7 +149,7 @@ def main() -> None:
         "numeric_features": numeric_features,
         "categorical_features": categorical_features,
         "classes": classes,
-        "model_type": "RandomForestClassifier",
+        "model_type": MODEL_TYPE,
         "test_size": TEST_SIZE,
         "random_state": RANDOM_STATE,
     }
@@ -159,6 +165,30 @@ def main() -> None:
         encoding="utf-8",
     )
 
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    mlflow.set_experiment(MLFLOW_EXPERIMENT)
+
+    with mlflow.start_run() as run:
+        mlflow.log_params(
+            {
+                "model_type": MODEL_TYPE,
+                "n_estimators": N_ESTIMATORS,
+                "test_size": TEST_SIZE,
+                "random_state": RANDOM_STATE,
+                "target_column": target_col,
+            }
+        )
+        mlflow.log_metrics(
+            {
+                "accuracy": metrics["accuracy"],
+                "f1_macro": metrics["f1_macro"],
+            }
+        )
+        mlflow.log_artifact(str(MODEL_PATH))
+        mlflow.log_artifact(str(METRICS_PATH))
+        mlflow.log_artifact(str(SCHEMA_PATH))
+        run_id = run.info.run_id
+
     print("✅ 模型训练完成")
     print(f"Train size: {len(X_train)}, Test size: {len(X_test)}")
     print(f"Accuracy: {metrics['accuracy']:.4f}")
@@ -168,6 +198,7 @@ def main() -> None:
     print(f"\n✅ 模型已保存：{MODEL_PATH}")
     print(f"✅ 指标已保存：{METRICS_PATH}")
     print(f"✅ Schema 已保存：{SCHEMA_PATH}")
+    print(f"✅ MLflow run_id: {run_id}")
 
 
 if __name__ == "__main__":

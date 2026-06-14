@@ -1,25 +1,58 @@
 """Exploratory data analysis for manufacturing quality classification."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-RAW_DATA_PATH = PROJECT_ROOT / "data" / "raw" / "manufacturing_quality.csv"
-OUTPUT_PATH = PROJECT_ROOT / "docs" / "eda_summary.md"
-TARGET_COLUMN = "target"
+RAW_PATH = PROJECT_ROOT / "data" / "raw" / "manufacturing_quality.csv"
+REPORT_PATH = PROJECT_ROOT / "docs" / "eda_summary.md"
+
+TARGET_CANDIDATES = [
+    "target",
+    "label",
+    "quality",
+    "defect",
+    "failure",
+    "pass_fail",
+]
 
 
-def load_data(path: Path) -> pd.DataFrame:
-    return pd.read_csv(path)
+def detect_target_column(df: pd.DataFrame) -> str | None:
+    return next((col for col in TARGET_CANDIDATES if col in df.columns), None)
 
 
-def build_summary(df: pd.DataFrame) -> str:
+def build_missing_table(df: pd.DataFrame) -> pd.DataFrame:
+    missing = df.isna().sum()
+    table = pd.DataFrame(
+        {
+            "missing_count": missing,
+            "missing_pct": (missing / len(df) * 100).round(2),
+        }
+    )
+    return table[table["missing_count"] > 0].sort_values(
+        "missing_count", ascending=False
+    )
+
+
+def build_target_table(df: pd.DataFrame, target_col: str) -> pd.DataFrame:
+    counts = df[target_col].value_counts(dropna=False).sort_index()
+    return pd.DataFrame(
+        {
+            "count": counts,
+            "percentage": (counts / len(df) * 100).round(2),
+        }
+    )
+
+
+def build_report(df: pd.DataFrame, target_col: str | None) -> str:
     lines: list[str] = [
         "# Manufacturing Quality EDA Summary",
         "",
-        f"- Source file: `{RAW_DATA_PATH.relative_to(PROJECT_ROOT)}`",
-        "- Task: manufacturing quality classification (`target`)",
+        f"- Source file: `{RAW_PATH.relative_to(PROJECT_ROOT)}`",
+        "- Task: manufacturing quality classification",
         "",
         "## Dataset Shape",
         "",
@@ -28,123 +61,72 @@ def build_summary(df: pd.DataFrame) -> str:
         "",
         "## Column Types",
         "",
-        "| Column | Dtype |",
-        "| --- | --- |",
+        df.dtypes.astype(str).to_frame("dtype").to_markdown(),
+        "",
+        "## Missing Values",
+        "",
     ]
 
-    for column, dtype in df.dtypes.items():
-        lines.append(f"| {column} | `{dtype}` |")
-
-    missing = df.isna().sum()
-    missing_pct = (missing / len(df) * 100).round(2)
-    missing_df = pd.DataFrame(
-        {"Missing Count": missing, "Missing %": missing_pct}
-    )
-    missing_df = missing_df[missing_df["Missing Count"] > 0].sort_values(
-        "Missing Count", ascending=False
-    )
-
-    lines.extend(["", "## Missing Values", ""])
-    if missing_df.empty:
-        lines.append("No missing values detected.")
+    missing_table = build_missing_table(df)
+    if missing_table.empty:
+        lines.append("无缺失值。")
     else:
-        lines.extend(
-            [
-                "| Column | Missing Count | Missing % |",
-                "| --- | ---: | ---: |",
-            ]
-        )
-        for column, row in missing_df.iterrows():
-            lines.append(
-                f"| {column} | {int(row['Missing Count'])} | {row['Missing %']:.2f}% |"
-            )
+        lines.append(missing_table.to_markdown())
 
-    target_counts = df[TARGET_COLUMN].value_counts(dropna=False).sort_index()
-    lines.extend(
-        [
-            "",
-            f"## Target Distribution (`{TARGET_COLUMN}`)",
-            "",
-            "| Target | Count | Percentage |",
-            "| --- | ---: | ---: |",
-        ]
-    )
-    for value, count in target_counts.items():
-        pct = count / len(df) * 100
-        lines.append(f"| {value} | {count:,} | {pct:.2f}% |")
+    lines.extend(["", "## Target Distribution", ""])
+    if target_col:
+        lines.append(f"目标列：`{target_col}`\n")
+        lines.append(build_target_table(df, target_col).to_markdown())
+    else:
+        lines.append("未自动识别 target 列，请手动确认目标列。")
 
-    numeric_cols = df.select_dtypes(include="number").columns.tolist()
-    describe = df[numeric_cols].describe().T
-    describe = describe.rename(
-        columns={
-            "count": "Count",
-            "mean": "Mean",
-            "std": "Std",
-            "min": "Min",
-            "25%": "25%",
-            "50%": "50%",
-            "75%": "75%",
-            "max": "Max",
-        }
-    )
-
-    lines.extend(
-        [
-            "",
-            "## Numeric Feature Statistics",
-            "",
-            "| Column | Count | Mean | Std | Min | 25% | 50% | 75% | Max |",
-            "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
-        ]
-    )
-    for column, row in describe.iterrows():
-        lines.append(
-            "| {column} | {count:.0f} | {mean:.3f} | {std:.3f} | {min:.3f} | "
-            "{p25:.3f} | {p50:.3f} | {p75:.3f} | {max:.3f} |".format(
-                column=column,
-                count=row["Count"],
-                mean=row["Mean"],
-                std=row["Std"],
-                min=row["Min"],
-                p25=row["25%"],
-                p50=row["50%"],
-                p75=row["75%"],
-                max=row["Max"],
-            )
-        )
+    numeric_df = df.select_dtypes(include="number")
+    if not numeric_df.empty:
+        lines.extend(["", "## Numeric Describe", ""])
+        lines.append(numeric_df.describe().T.to_markdown())
 
     lines.append("")
     return "\n".join(lines)
 
 
-def print_summary(df: pd.DataFrame) -> None:
+def print_summary(df: pd.DataFrame, target_col: str | None) -> None:
     print(f"Rows: {len(df)}, Columns: {len(df.columns)}")
     print("\nColumn types:")
     print(df.dtypes.to_string())
 
-    missing = df.isna().sum()
+    missing_table = build_missing_table(df)
     print("\nMissing values:")
-    if missing.sum() == 0:
-        print("No missing values detected.")
+    if missing_table.empty:
+        print("无缺失值。")
     else:
-        print(missing[missing > 0].to_string())
+        print(missing_table.to_string())
 
-    print(f"\nTarget distribution ({TARGET_COLUMN}):")
-    print(df[TARGET_COLUMN].value_counts(dropna=False).sort_index().to_string())
+    if target_col:
+        print(f"\nTarget distribution ({target_col}):")
+        print(build_target_table(df, target_col).to_string())
+    else:
+        print("\nTarget column: 未自动识别")
 
-    numeric_cols = df.select_dtypes(include="number").columns.tolist()
-    print("\nNumeric feature statistics:")
-    print(df[numeric_cols].describe().to_string())
+    numeric_df = df.select_dtypes(include="number")
+    if not numeric_df.empty:
+        print("\nNumeric describe:")
+        print(numeric_df.describe().to_string())
 
 
 def main() -> None:
-    df = load_data(RAW_DATA_PATH)
-    print_summary(df)
+    if not RAW_PATH.exists():
+        raise FileNotFoundError(
+            f"未找到数据文件：{RAW_PATH}。请先将 CSV 放到 data/raw/ 下。"
+        )
 
-    summary = build_summary(df)
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(summary, encoding="utf-8")
-    print(f"\nEDA summary saved to: {OUTPUT_PATH}")
+    df = pd.read_csv(RAW_PATH)
+    target_col = detect_target_column(df)
+
+    print_summary(df, target_col)
+
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    REPORT_PATH.write_text(build_report(df, target_col), encoding="utf-8")
+    print(f"\n✅ EDA 完成：{REPORT_PATH}")
 
 
 if __name__ == "__main__":
