@@ -185,13 +185,32 @@ python scripts/sample_predict.py
 
 ## 当前限制
 
-- **演示用途**：模型与 API 仅供学习与流程演示，未经充分验证，**不可直接用于生产决策**。
-- **不追求 SOTA**：仅使用默认 Random Forest，未做超参搜索、特征工程或集成学习。
+- **演示用途**：模型与 API 用于流程演示与实验验证，未经充分验证，**不可直接用于生产决策**。
+- **baseline 定位**：未做超参搜索与集成学习；**不以 SOTA 为目标**。
 - **数据规模小**：500 条合成/示例数据，泛化能力有限。
 - **类别不均衡**：defect 类 recall 偏低，需进一步采样或调参。
 - **无在线再训练**：推理服务只加载静态 `artifacts/`，不支持 A/B 或模型热更新。
 
 更详细的实验结论与后续计划见 [`docs/experiment_report.md`](docs/experiment_report.md)。
+
+## 与 rag-agent 的集成
+
+本服务与 [rag-agent](../rag-agent) **解耦部署**（独立仓库、HTTP 调用，无共享代码或数据库）：
+
+| 服务 | 端口 | 集成方式 |
+|------|------|----------|
+| industrial-health-demo | 8010 | 提供 `/health`、`/model-info`、`POST /predict` |
+| rag-agent | 8000 | Agent 工具 `check_machine_health` HTTP 调用本服务 |
+| Streamlit UI | 8501 | 「设备健康预测」Tab 直连 `HEALTH_API_URL` |
+
+详见 rag-agent 文档：[industrial_demo_guide.md](../rag-agent/docs/industrial_demo_guide.md)。
+
+## 后续计划
+
+- 固定 scikit-learn 版本，消除 Docker 与本地训练环境不一致警告
+- 扩展特征工程与超参搜索；评估 XGBoost / LightGBM 等模型
+- 将 `model.pkl` 迁至 Release 分发（可选），减小仓库体积
+- 增加 CI 与 API 回归测试
 
 ## 项目结构
 
