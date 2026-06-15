@@ -2,8 +2,18 @@
 __pycache__/
 *.py[cod]
 .DS_Store
+**/.DS_Store
 
 # MLflow local tracking
 mlflow.db
 mlruns/
 mlartifacts/
+
+# 环境变量与本地日志
+.env
+.env.*
+!.env.example
+*.log
+.pytest_cache/
+.idea/
+.vscode/
