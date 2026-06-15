@@ -17,3 +17,6 @@ mlartifacts/
 .pytest_cache/
 .idea/
 .vscode/
+
+# 本地训练中间产物（非推理必需）
+data/processed/*.csv

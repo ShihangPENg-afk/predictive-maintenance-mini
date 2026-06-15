@@ -141,7 +141,7 @@ bash scripts/start_mlflow_ui.sh
 ### 当前限制
 
 1. **非生产级**：模型未经业务验证，API 中的 `risk_level` 与 `recommendation` 为规则化演示逻辑，不能替代人工质检或专业 PHM 系统。
-2. **不追求 SOTA**：未尝试 XGBoost、LightGBM、神经网络或 AutoML；无超参搜索（GridSearch / Optuna）。
+2. **baseline 范围**：未尝试 XGBoost、LightGBM、神经网络或 AutoML；无超参搜索（GridSearch / Optuna）；**不以 SOTA 为目标**。
 3. **数据量有限**：500 条样本不足以评估真实产线漂移与季节性变化。
 4. **特征工程不足**：未做交互项、时序窗口、异常检测预处理等工业常见步骤。
 5. **评估维度单一**：仅报告 accuracy / f1_macro，缺少 PR 曲线、校准度、成本敏感指标（如漏检代价）。

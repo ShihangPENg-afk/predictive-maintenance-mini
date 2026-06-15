@@ -12,7 +12,7 @@
 | **rag-agent** | https://github.com/ShihangPENg-afk/rag-agent | Agentic RAG 主应用；通过 HTTP 调用本服务 |
 | **llm-finetune-manual** | https://github.com/ShihangPENg-afk/llm-finetune-manual | LoRA 微调实验（与工业预测链路无关） |
 
-> **定位说明**：本项目用于演示工业预测项目的工程化流程，**不是生产级模型**，也**不追求 SOTA 指标**。目标是展示数据探索、训练、实验记录与 API 部署的标准做法。
+> **定位说明**：本项目用于演示工业预测项目的工程化流程，**不是生产级模型**，**baseline 未针对 SOTA 调优**。目标是展示数据探索、训练、实验记录与 API 部署的标准做法。
 
 ## 项目简介
 
@@ -199,6 +199,18 @@ python scripts/sample_predict.py
 ```
 
 交互式 API 文档：<http://127.0.0.1:8010/docs>
+
+## 实验结果摘要
+
+当前 baseline（RandomForest，`artifacts/metrics.json`，500 行数据、80/20 分层划分）：
+
+| 指标 | 值 |
+|------|-----|
+| **accuracy** | 0.71 |
+| **f1_macro** | 0.67 |
+| defect recall | 0.51（类别不均衡，defect 召回偏低） |
+
+完整报告与限制说明见 [`docs/experiment_report.md`](docs/experiment_report.md)。**不可用于生产决策**。
 
 ## 当前限制
 
