@@ -100,6 +100,14 @@ bash scripts/start_mlflow_ui.sh
 
 Default UI: http://127.0.0.1:5001
 
+**MLflow UI examples** (params/metrics match `artifacts/`):
+
+| Run overview (RandomForest baseline) | Artifacts (`model.pkl`, `metrics.json`, `schema.json`) |
+|--------------------------------------|--------------------------------------------------------|
+| ![MLflow run overview](docs/images/mlflow_ui.png) | ![MLflow artifacts](docs/images/mlflow_artifacts.png) |
+
+> If the UI still shows the legacy experiment name `industrial-health-demo`, delete `mlflow.db` and `mlruns/`, then run `python scripts/train_model.py` to log under `predictive-maintenance-mini`.
+
 ## FastAPI Service
 
 Requires trained `artifacts/model.pkl`:
@@ -130,7 +138,9 @@ Request body:
 
 Response includes `prediction`, `prediction_label`, `probabilities`, `risk_level` (high / medium / low), and a text `recommendation`.
 
-Interactive docs: http://127.0.0.1:8010/docs
+**Swagger UI** (http://127.0.0.1:8010/docs):
+
+![FastAPI Swagger docs](docs/images/swagger_docs.png)
 
 ## Tests
 
@@ -203,22 +213,32 @@ Decoupled HTTP deployment (separate repos, no shared code or DB):
 
 See [industrial_demo_guide.md](https://github.com/ShihangPENg-afk/rag-agentic-system/blob/main/docs/industrial_demo_guide.md) in rag-agentic-system.
 
+**Streamlit "device health" tab** (`HEALTH_API_URL` → `:8010`):
+
+![rag-agentic-system device health tab](docs/images/rag_agent_tab.png)
+
+Recapture locally:
+
+```bash
+uvicorn app.main:app --host 127.0.0.1 --port 8010   # terminal 1
+cd ../rag-agentic-system && HEALTH_API_URL=http://127.0.0.1:8010 python -m streamlit run ui/streamlit_app.py --server.port 8501
+bash ../predictive-maintenance-mini/scripts/capture_showcase_screenshots.sh
+```
+
 ## Roadmap
 
 - Feature engineering, hyperparameter search, **XGBoost / LightGBM baselines**
 - Optional Release distribution for `model.pkl`
 - GitHub Actions CI (`pytest` + Docker smoke tests)
-- Optional screenshots under `docs/images/` (see below)
 
-## Optional Showcase Assets (manual)
+## Showcase Screenshots
 
-Add screenshots to `docs/images/` for portfolios or demos:
-
-| Asset | Suggested path | How to capture |
-|-------|----------------|----------------|
-| Swagger UI | `docs/images/swagger_docs.png` | http://127.0.0.1:8010/docs |
-| MLflow UI | `docs/images/mlflow_ui.png` | After `bash scripts/start_mlflow_ui.sh` |
-| rag-agentic-system tab | `docs/images/rag_agent_tab.png` | Streamlit "device health" tab in rag-agentic-system |
+| Asset | Path | Status |
+|-------|------|--------|
+| MLflow run overview | `docs/images/mlflow_ui.png` | Included |
+| MLflow artifacts | `docs/images/mlflow_artifacts.png` | Included |
+| FastAPI Swagger | `docs/images/swagger_docs.png` | Included |
+| rag-agentic-system tab | `docs/images/rag_agent_tab.png` | Included |
 
 ## Project Layout
 

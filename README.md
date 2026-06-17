@@ -124,6 +124,14 @@ bash scripts/start_mlflow_ui.sh
 MLFLOW_UI_HOST=0.0.0.0 MLFLOW_UI_PORT=5001 bash scripts/start_mlflow_ui.sh
 ```
 
+**MLflow UI 示例**（参数、指标与 `artifacts/` 一致）：
+
+| Run 概览（RandomForest baseline） | Artifacts（`model.pkl` / `metrics.json` / `schema.json`） |
+|-----------------------------------|-----------------------------------------------------------|
+| ![MLflow run overview](docs/images/mlflow_ui.png) | ![MLflow artifacts](docs/images/mlflow_artifacts.png) |
+
+> 若本地 UI 仍显示旧 Experiment 名 `industrial-health-demo`，删除 `mlflow.db` 与 `mlruns/` 后重新执行 `python scripts/train_model.py`，即可在 `predictive-maintenance-mini` 下看到新 run。
+
 ## FastAPI `/predict` 服务
 
 本地启动（需先完成训练，存在 `artifacts/model.pkl`）：
@@ -153,6 +161,10 @@ uvicorn app.main:app --host 0.0.0.0 --port 8010 --reload
 ```
 
 响应包含 `prediction`、`prediction_label`、`probabilities`、`risk_level`（high / medium / low）及 `recommendation` 文本建议。
+
+**Swagger 交互文档**（<http://127.0.0.1:8010/docs>）：
+
+![FastAPI Swagger docs](docs/images/swagger_docs.png)
 
 ## Docker 启动方法
 
@@ -254,22 +266,41 @@ pytest tests/
 
 详见 rag-agentic-system 文档：[industrial_demo_guide.md](https://github.com/ShihangPENg-afk/rag-agentic-system/blob/main/docs/industrial_demo_guide.md)。
 
+**Streamlit「设备健康预测」Tab 联调示例**（`HEALTH_API_URL` → `:8010`，输入传感器读数后展示 `prediction` / `risk_level` / `recommendation`）：
+
+![rag-agentic-system device health tab](docs/images/rag_agent_tab.png)
+
+本地复现截图（需先启动 `:8010` 推理服务，再在 rag-agentic-system 目录启动 Streamlit `:8501`）：
+
+```bash
+# 终端 1：本仓库
+uvicorn app.main:app --host 127.0.0.1 --port 8010
+
+# 终端 2：rag-agentic-system（若 .venv 脚本报错，用 python -m streamlit）
+cd ../rag-agentic-system
+HEALTH_API_URL=http://127.0.0.1:8010 python -m streamlit run ui/streamlit_app.py --server.port 8501
+```
+
+或使用一键脚本重新生成 README 展示图（依赖 rag-agentic-system 的 Playwright）：
+
+```bash
+bash scripts/capture_showcase_screenshots.sh
+```
+
 ## 后续计划
 
 - 扩展特征工程与超参搜索；**新增 XGBoost / LightGBM baseline 对比**
 - 将 `model.pkl` 迁至 Release 分发（可选），减小仓库体积
 - 增加 GitHub Actions CI（`pytest` + Docker 冒烟测试）
-- 补充 MLflow UI、Swagger `/docs`、rag-agentic-system 联调截图（见下方「可选展示素材」）
 
-## 可选展示素材（需手动添加）
+## 展示截图
 
-以下截图可放入 `docs/images/` 并在 README 中引用，便于作品集或答辩展示（本仓库暂不内置图片）：
-
-| 素材 | 建议文件名 | 获取方式 |
-|------|------------|----------|
-| API 文档页 | `docs/images/swagger_docs.png` | 启动服务后打开 <http://127.0.0.1:8010/docs> 截图 |
-| MLflow 实验页 | `docs/images/mlflow_ui.png` | `bash scripts/start_mlflow_ui.sh` 后打开 <http://127.0.0.1:5001> |
-| rag-agentic-system 联调 | `docs/images/rag_agent_tab.png` | 在 [rag-agentic-system](https://github.com/ShihangPENg-afk/rag-agentic-system) 启动后打开 Streamlit「设备健康预测」Tab |
+| 素材 | 路径 | 状态 |
+|------|------|------|
+| MLflow Run 概览 | `docs/images/mlflow_ui.png` | 已内置 |
+| MLflow Artifacts | `docs/images/mlflow_artifacts.png` | 已内置 |
+| FastAPI Swagger | `docs/images/swagger_docs.png` | 已内置 |
+| rag-agentic-system 联调 | `docs/images/rag_agent_tab.png` | 已内置 |
 
 ## 项目结构
 
@@ -278,7 +309,8 @@ predictive-maintenance-mini/
 ├── app/                      # FastAPI 推理服务
 ├── artifacts/                # 模型、指标、schema
 ├── data/raw/                 # 模拟 CSV
-├── docs/                     # EDA 与实验报告
+├── docs/                     # EDA、实验报告与展示截图
+│   └── images/               # MLflow UI 等截图
 ├── scripts/
 │   ├── generate_sample_data.py
 │   ├── eda.py
